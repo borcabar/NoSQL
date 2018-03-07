@@ -1,0 +1,443 @@
+
+#####################################################################
+#############  Prácticas Curso Bases de Datos NoSQL  ################
+#####################################################################
+
+## Suponiendo que en la base de datos Empleados estan las tablas:TCENTR, TDEPTO y TEMPLE - por favor, correr 
+# este archivo desde la linea de comandos de mysql corriendo los comandos:
+
+-- mysql> use Empleados;
+-- mysql> source PATH/solucion_ejercicios_boris.txt
+
+
+
+
+
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo "############################################################"
+\! echo "############################################################"
+\! echo "UNIVERSIDAD PONTIFICIA COMILLAS - ICAI"
+\! echo "Master Big Data and Advanced Analytics"
+\! echo "############################################################"
+\! echo "############################################################"
+\! echo " "
+\! echo " "
+\! echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+\! echo "SOLUCIÓN EJERCICIOS CURSO BBDD NoSQL"
+\! echo "Prof. Israel Alonso Martinez"
+\! echo "Alumno: Boris Cabrera, código 201710808"
+\! echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+
+\! echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+\! echo "2.2.1 PRÁCTICA CONSULTAS SENCILLAS"
+\! echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo "Consultas Sencillas"
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+
+\! echo " 1. Hallar,  en  orden  alfabético,  los nombres  de  los  departamentos  cuyo  director  lo  es  en funciones y no en propiedad."
+
+select distinct NOMDE from TDEPTO where TIDIR = 'F' order by NOMDE;
+
+
+\! echo "2.Obtener un listín telefónico de los empleados del departamento 121 incluyendo nombre de empleado, número de empleado y extensión telefónica. Por orden alfabético."
+
+select NOMEM, NUMEM, EXTEL from TEMPLE where NUMDE=121 order by NOMEM;
+
+
+\! echo "3.Obtener  por  orden  creciente  una  relación  de  todos  los  números  de  extensiones telefónicas de los empleados. "
+
+select distinct EXTEL from TEMPLE order by EXTEL limit 10;
+
+
+\! echo "4.Hallar  la  comisión,  nombre  y  salario  de  los  empleados  con  más  de  tres  hijos, clasificados por comisión, y dentro por orden alfabético. "
+
+select COMIS, NOMEM, SALAR from TEMPLE where NUMHI>=3 order by COMIS;
+
+
+\! echo "5.Obtener salario y nombre de los empleados sin hijos por orden decreciente de salario y por orden alfabético dentro de salario. "
+
+select SALAR, NOMEM from TEMPLE where NUMHI = 0 order by SALAR desc;
+
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo "Predicados" 
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+
+\! echo "1.Hallar  por  orden  de  número  de  empleado  el  nombre  y  salario  total  (salario  más comisión)  de  los  empleados  cuyo  salario  total  supera  algún  salario  en  3000  euros mensuales. NO ME QUEDA COMPLETAMENTE CLARO EL ENUNCIADO"
+
+select NOMEM, (SALAR + COALESCE(COMIS,0)) as SALTO from TEMPLE 
+	where (SALAR+ COALESCE(COMIS,0))>3000 order by NUMEM limit 10;
+
+
+\! echo "2.Para los empleados que no tienen comisión obtener por orden alfabético el nombre y el cociente entre su salario y el número de hijos. (Habrá que descartar los empleados que no tengan hijos, para evitar la división por cero)."
+
+select NOMEM, (SALAR/NUMHI) as cociente from TEMPLE 
+	where (COMIS is NULL and NUMHI > 0) order by NOMEM;
+
+
+\! echo "3. Se  desea  hacer  un  regalo  de  un  1%  del  salario  a  los  empleados  en  el  día  de  su onomástica. Hallar por orden alfabético los nombres y cuantía de los regalos en euros para los que celebren su santo el día de San Honorio.  "
+
+\! echo "Suponiendo que el onomático de San Honorio es el 20 de Octubre, aunque el 26 de Febrero es más interesante:"
+
+select NOMEM, (SALAR/100) as REGALO from TEMPLE 
+	where (month(FECNA)=10 and day(FECNA)=20) order by NOMEM;
+
+
+
+\! echo "4.Obtener por orden alfabético los nombres y salarios de los empleados del departamento 111 que tienen comisión si hay alguno de ellos cuya comisión supere al 15 % de su salario. "
+
+select NOMEM, SALAR from TEMPLE where (NUMDE=111 and COMIS is not NULL and (SALAR*0.15<COMIS)); 
+
+
+\! echo "5. Hallar por orden alfabético los nombres y salarios de empleados de los departamentos 110 y 111 que o bien no tengan hijos o bien su salario por hijo supere 3000 euros. "
+
+select NOMEM, SALAR from TEMPLE 
+	where ((NUMDE=111 or NUMDE = 110) and (NUMHI = 0 or SALAR/NUMHI > 3000)) 
+	order by NOMEM;
+
+
+\! echo "6. Hallar por orden alfabético los nombres de departamentos que o bien tienen directores en funciones, o bien en propiedad y su presupuesto anual excede a 50 000 euros, o bien no dependen de ningún otro."
+
+select NOMDE from TDEPTO 
+	where (TIDIR='F' or (TIDIR='P' and PRESU>50000) or DEPDE is NULL) 
+	order by NOMDE;
+
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+\! echo "2.3 FUNCIONES ESCALARES Y COLECTIVAS"
+\! echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo "Funciones de escalares." 
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+
+\! echo "1.Hallar los nombres de los empleados que no tienen comisión, clasificados de manera que aparezcan primero aquellos cuyos nombres son más cortos. "
+
+select NOMEM from TEMPLE 
+where COMIS is NULL 
+order by length(NOMEM);
+
+
+
+\! echo "2.Hallar  por  orden  alfabético  los  nombres  de  empleados  suprimiendo  las  tres  últimas letras de los nombres de pila, para los empleados cuyos nombres de pila tengan más de 6 letras. "
+
+select reverse(substr(reverse(substring_index(NOMEM,',',-1)),4)) as name from TEMPLE 
+where length(substring_index(NOMEM,',',-1)) >6
+order by NOMEM;
+
+
+\! echo "3.Obtener el nombre del empleado y el valor del código ASCII del segundo carácter de aquél cuyo número de empleado es el 120. "
+
+select NOMEM, ascii(mid(NOMEM,3,1)) 
+from TEMPLE 
+where NUMEM=120;
+
+
+
+\! echo "4. Obtener la lista de los empleados (número de empleado y comisiones que cobran) con salario mayor de 400 €, especificar con valor 0 si en alguna fila la comisión está a nulos. "
+
+select NUMEM, coalesce(COMIS,0) from TEMPLE where SALAR>400;
+
+
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo "Funciones de columna. "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+
+
+\! echo "5.Hallar cuántos departamentos hay y el presupuesto anual medio de ellos. "
+
+select count(*), avg(PRESU) from TDEPTO;
+
+
+\! echo "6.Como  la  pregunta  anterior,  pero  para  los  departamentos  que  no  tienen  director  en propiedad. "
+
+select count(*), avg(PRESU) from TDEPTO 
+where TIDIR = 'P';
+
+
+\! echo "7.Hallar  por  orden  de  número  de  empleado  el  nombre  y  salario  total  (salario  más comisión) de los empleados cuyo salario total supera al salario mínimo en 3000 euros mensuales. "
+
+select NOMEM, SALAR from TEMPLE where (SALAR+coalesce(COMIS, 0)>3000) order by NUMEM;
+
+
+
+\! echo "8.Hallar  la  masa  salarial  anual  (salario  más  comisión)  de  la  empresa  (se  suponen  14 pagas anuales). "
+
+select sum(14*SALAR+12*coalesce(COMIS, 0)) from TEMPLE;
+
+
+
+\! echo "9.Hallar el salario medio de los empleados cuyo salario no supera en más de 20 %, al salario mínimo de los empleados que tienen algún hijo y su salario entre el número de sus hijos, es mayor que 1000 euros. "
+
+select avg(SALAR) from TEMPLE 
+where 
+((NUMHI>0 and SALAR/NUMHI>1000) 
+and 
+(SALAR < (select 1.2*min(SALAR) from TEMPLE where NUMHI>=1)));
+
+
+
+\! echo "10. Hallar la diferencia entre el salario más alto y el más bajo. "
+
+select (max(SALAR)-min(SALAR)) as DIFERENCIA from TEMPLE;
+
+
+
+\! echo "11.Hallar  el  nombre  y  presupuesto  de  los  departamentos  que  superan al  presupuesto medio de todos los departamentos. "
+
+select NOMDE, PRESU from TDEPTO 
+where PRESU>(select avg(PRESU) from TDEPTO);
+
+
+\! echo "12.Hallar el número medio de hijos por empleado para todos los empleados que no tienen más de dos hijos. "
+
+select avg(NUMHI) from TEMPLE where NUMHI<3;
+
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+\! echo "2.4 EJERCICIOS AGRUPAMIENTO"
+\! echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+
+\! echo "1. Hallar el salario medio y la edad media en años para cada grupo de "
+\! echo "empleados con igual comisión y para los que no la tengan. "
+
+select avg(SALAR), avg(year(date(now()))-year(FECNA)) as Edad
+from TEMPLE 
+group by coalesce(COMIS,0) limit 20;
+
+
+\! echo "2. Para los  departamentos  en  los  que  hay  algún  empleado  cuyo  salario  "
+\! echo "sea mayor  que 4000  euros  al  mes  hallar  el  número  de  empleados  y  la  "
+\! echo "suma  de  sus  salarios, comisiones y número de hijos.  "
+
+select count(*) as Numero_Empleados, sum(SALAR) as Salario_total, 
+sum(coalesce(COMIS,0)) as Comisiones_total, sum(NUMHI) as ninhos
+from TEMPLE group by NUMDE having (max(SALAR))>4000;
+
+
+\! echo "3. Para cada departamento, hallar la media de la comisión con respecto a los "
+\! echo "empleados que la reciben y con respecto al total de empleados. "
+
+select sum(coalesce(COMIS,0))/(count(COMIS)) as Comi_Media_Reciben, 
+avg(coalesce(COMIS,0)) as Comi_Media_total 
+from TEMPLE group by NUMDE;
+
+
+\! echo "4. Para cada extensión telefónica hallar cuántos empleados la usan y el salario "
+\! echo "medio de éstos. "
+
+select EXTEL, count(*) as Empleados_usando, avg(SALAR) from TEMPLE group by EXTEL;
+
+#sé que no era necesario poner la extensión, pero con ella me parece más limpia la respuesta
+
+
+\! echo "5. Para cada extensión telefónica y cada departamento hallar cuántos empleados "
+\! echo "la usan y el salario medio de éstos. "
+
+select count(*) as Empleados_usando, avg(SALAR) from TEMPLE group by EXTEL, NUMDE;
+
+
+\! echo "6. Hallar los números de extensión telefónica mayores de los diversos departamentos. "
+
+select max(EXTEL) as Mayor_Extension from TEMPLE group by NUMDE;
+
+
+\! echo "7. Para cada extensión telefónica hallar el número de departamentos a los que sirve.  " 
+
+select count(NUMDE) as Numero_Deptos_por_Linea from TEMPLE group by EXTEL;
+
+
+\! echo "8. Para  los  departamentos  en  los  que  algún  empleado  tiene  comisión,  "
+\! echo "hallar  cuántos empleados hay en promedio por cada extensión telefónica. "
+
+select count(*)/count(distinct EXTEL) as Empleados_Promedio_por_Exten from TEMPLE group by NUMDE;
+
+
+\! echo "9. Para  los  departamentos  cuyo  salario  medio  supera  al  de  la  empresa, "
+\! echo "hallar  cuántas extensiones telefónicas tienen. "
+
+select count(EXTEL) as Cantidad_Exten 
+from TEMPLE 
+group by NUMDE 
+having avg(SALAR)>(select avg(SALAR) from TEMPLE);
+
+
+\! echo "10. Hallar  el  máximo  valor  de  la  suma  de  los  salarios  de  los  departamentos.  "
+\! echo "(Es  decir, hallar el/los departamento/s cuya suma de salarios sea la más alta) "
+
+select NUMDE, sum(SALAR) as Max_Valor from TEMPLE group by NUMDE order by sum(SALAR) desc limit 1;
+
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+\! echo "2.5 EJERCICIOS JOIN"
+\! echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo " "
+
+
+\! echo "1.Obtener por orden alfabético los nombres de empleados cuyo apellido empieza por G y trabajan en un departamento ubicado en algún centro de trabajo de la calle Alcalá. "
+
+select NOMEM, NUMDE from TEMPLE where ((substr(NOMEM,1,1) = "G") 
+	and (NUMDE in
+	(select NUMDE from TDEPTO 
+	where NUMCE = 
+	(select NUMCE from TCENTR where SEÑAS like "%Alcalá%"))));
+
+
+\! echo "2.A los distintos empleados que son directores en funciones se les asignará una gratificación del 5 % de su salario. Hallar por orden alfabético los nombres y gratificación correspondiente a cada uno. "
+
+-- Supongo que el campo TDEPTO.DIREC es el Numero de Empleado del director, que en TEMPLE es NUMEM
+
+select NOMEM, 0.05*SALAR as Gratificación 
+from TEMPLE 
+where NUMEM in 
+(select DIREC from TDEPTO where TIDIR="F") 
+order by NOMEM;
+
+\! echo "3.Comprobar que no hay empleados cuyo departamento no esté en TDEPTO. "
+
+select NOMEM from TEMPLE 
+where NUMDE not 
+in (select distinct NUMDE from TDEPTO);
+
+
+\! echo "4.Obtener por orden alfabético todos los datos de los centros de trabajo en los que hay algún departamento cuyo director lo sea en funciones. (Con Agrupamiento) "
+
+select * from TCENTR 
+where NUMCE in (select NUMCE from TDEPTO group by NUMCE having count(TIDIR ='F')>0)
+order by NOMCE;
+
+
+\! echo "5.Para los departamentos cuyo director lo sea en funciones hallar el número de empleados y la suma de sus salarios, comisiones y número de hijos.  "
+
+
+select NUMDE, count(*) as Num_Empleados, sum(SALAR) as Salarios_Total, 
+sum(coalesce(COMIS,0)) as Comisiones_total , sum(NUMHI) as Ninhos_total 
+from TEMPLE
+group by NUMDE 
+having NUMDE in 
+(select NUMDE from TDEPTO group by NUMDE having count(TIDIR ='F'));
+
+-- A veces agrego un campo que no es solicitado, pero que encuentro importante para confirmar 
+-- que la busqueda esta bien hecha, y para mayor claridad del resultado
+
+
+\! echo "6.Para los departamentos cuyo presupuesto anual supera a 60 000 euros, hallar cuántos empleados hay en promedio por cada extensión telefónica. "
+
+select count(NUMEM)/count(distinct EXTEL)
+from TEMPLE 
+group by NUMDE 
+having NUMDE in (select NUMDE from TDEPTO where PRESU>60);
+
+-- En mis resultados, el NUMEM=150, que se encutnre en el TDEPTO='123' cuyo presupuento es mayor a 100, 
+-- NO aparece en TEMPLE, y por tanto el resultado de la query es NADA
+
+\! echo "7.Para cada empleado que es director, hallar por orden alfabético su nombre y la suma de los  salarios  de  los  empleados  que están directamente a su cargo (es  decir,  en  los departamentos  que  él  dirige),  en  dos  grupos  separados  según  sea  en  funciones  o  en propiedad. "
+
+select 
+	(select NOMEM from TEMPLE 
+	where TEMPLE.NUMEM=TDEPTO.DIREC) as Director,
+	sum(SALAR) as Salarios 
+from TDEPTO inner Join TEMPLE on TDEPTO.NUMDE=TEMPLE.NUMDE
+group by DIREC;
+
+-- No sé como implementar el orden alfabetico
+
+
+\! echo "8.Hallar por orden alfabético los nombres de los departamentos cuyo presupuesto medio por empleado supera a la media de sus salarios. "
+
+select NOMDE
+from TDEPTO inner join TEMPLE 
+on TDEPTO.NUMDE=TEMPLE.NUMDE 
+group by TDEPTO.NUMDE
+having avg(1000*PRESU)/count(TDEPTO.NUMDE)>avg(SALAR)
+order by TDEPTO.NOMDE;
+
+
+\! echo "9.Hallar  el  número  de  departamento  y  el  salario  máximo  para  los  departamentos  cuyo salario  máximo  es  menor  que  el  salario  medio  de  los  empleados  de  todos  los  demás departamentos. "
+
+select NUMDE, max(SALAR) as Salario_Max
+from TEMPLE 
+group by NUMDE 
+having max(SALAR)<((-sum(SALAR)+(select sum(SALAR) from TEMPLE))
+	/(-count(NUMEM)+(select count(NUMEM) from TEMPLE)));
+
+-- No entiendo porque esta es la última pregunta, no se necesitan yuncionaes ni 
+-- funciones ventana para resolverla. Supongoq ue se podrá resolver de forma más elegante.
+
+
+
+\! echo " "
+\! echo " "
+\! echo " "
+\! echo "             ..............."
+\! echo "             ####  #   #   #"
+\! echo "             #     #   ##  #"
+\! echo "             ###   #   # # #"
+\! echo "             #     #   #  ##"
+\! echo "             #     #   #   #"
+\! echo "             ..............."
+\! echo " "
+\! echo " "
+\! echo " "
