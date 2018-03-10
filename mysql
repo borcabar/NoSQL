@@ -393,17 +393,22 @@ having NUMDE in (select NUMDE from TDEPTO where PRESU>60);
 -- En mis resultados, el NUMEM=150, que se encutnre en el TDEPTO='123' cuyo presupuento es mayor a 100, 
 -- NO aparece en TEMPLE, y por tanto el resultado de la query es NADA
 
-\! echo "7.Para cada empleado que es director, hallar por orden alfabético su nombre y la suma de los  salarios  de  los  empleados  que están directamente a su cargo (es  decir,  en  los departamentos  que  él  dirige),  en  dos  grupos  separados  según  sea  en  funciones  o  en propiedad. "
+\! echo "7.Para cada empleado que es director, hallar por orden alfabético su nombre y la suma de los salarios  de  los  empleados  que están directamente a su cargo (es  decir,  en  los departamentos que  él  dirige),  en  dos  grupos  separados  según  sea  en  funciones  o  en propiedad. "
 
-select 
-	(select NOMEM from TEMPLE 
-	where TEMPLE.NUMEM=TDEPTO.DIREC) as Director,
-	sum(SALAR) as Salarios 
-from TDEPTO inner Join TEMPLE on TDEPTO.NUMDE=TEMPLE.NUMDE
-group by DIREC;
+select NOMEM as Director, T1.Salarios2 as Salarios, TIDIR
+from
+(select sum(Salarios3) as Salarios2 , DIREC, max(TIDIR) as TIDIR
+	from 
+	(select sum(SALAR) as Salarios3, NUMDE from TEMPLE group by NUMDE) T3 
+	inner join TDEPTO T2 on T3.NUMDE=T2.NUMDE
+	group by T2.DIREC) T1 inner join TEMPLE T0 
+	on T1.DIREC=T0.NUMEM 
+order by NOMEM;
 
--- No sé como implementar el orden alfabetico
-
+\! echo " "
+\! echo "La pregunta tiene una trampa, solo dos Directores están en Funciones, pero ellos mismos también lo son en propiedad (150 y 180). Agregar todos los sueldos, presupone que en funciones o en propiedad son mutuamente excluyentes, cosa falsa."
+\! echo " "
+\! echo " "
 
 \! echo "8.Hallar por orden alfabético los nombres de los departamentos cuyo presupuesto medio por empleado supera a la media de sus salarios. "
 
@@ -418,13 +423,22 @@ order by TDEPTO.NOMDE;
 \! echo "9.Hallar  el  número  de  departamento  y  el  salario  máximo  para  los  departamentos  cuyo salario  máximo  es  menor  que  el  salario  medio  de  los  empleados  de  todos  los  demás departamentos. "
 
 select NUMDE, max(SALAR) as Salario_Max
+from TEMPLE T1
+group by NUMDE 
+having max(SALAR) < 
+	(select avg(SALAR) from TEMPLE where TEMPLE.NUMDE <> T1.NUMDE);
+
+
+\! echo " "
+\! echo "Otra solución, pero usando consultas normales"
+\! echo " "
+
+
+select NUMDE, max(SALAR) as Salario_Max
 from TEMPLE 
 group by NUMDE 
 having max(SALAR)<((-sum(SALAR)+(select sum(SALAR) from TEMPLE))
 	/(-count(NUMEM)+(select count(NUMEM) from TEMPLE)));
-
--- No entiendo porque esta es la última pregunta, no se necesitan yuncionaes ni 
--- funciones ventana para resolverla. Supongoq ue se podrá resolver de forma más elegante.
 
 
 
