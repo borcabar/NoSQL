@@ -1,0 +1,469 @@
+
+#####################################################################
+#################       Bases de Datos No SQL      ##################
+####################   Práctica Boris Cabrera   #####################
+#################    Profesor Pablo Ema Llorente   ##################
+#####################################################################
+
+# acceder a hbase
+$ hbase shell
+
+
+## ==================================================================
+## Comandos generales
+
+
+# obtener ayuda
+hbase> help "command"
+
+#saber la versión
+hbase> version
+1.2.0-cdh5.12.1, rUnknown, Thu Aug 24 09:37:07 PDT 2017
+
+# Se crea el name space
+hbase> create_namespace 'bc1'
+
+# describir el namespace
+hbase> describe_namespace 'bc1'
+DESCRIPTION                                                                     
+{NAME => 'bc1'}                                                                 
+1 row(s) in 0.0120 seconds
+
+# para confirmar que todo esta en orden se ven todos los name spaces
+hbase> list_namespace
+NAMESPACE                                                                       
+AafhSpace                                                                       
+AalfSpace                                                                       
+BbcbSpace                                                                       
+IamSpace                                                                        
+PjelSpace                                                                       
+PporSpace                                                                       
+aammspace                                                                       
+afernandez                                                                      
+amm                                                                             
+ammubun                                                                         
+bc                                                                              
+bc1                                                                             
+cammSpace                                                                       
+default                                                                         
+ggviSpace                                                                       
+hbase                                                                           
+jlg                                                                             
+manrique                                                                        
+ns1                                                                             
+ns_ia1                                                                          
+20 row(s) in 0.0110 seconds
+
+
+
+## ==================================================================
+## Gestión de tablas
+
+
+#se crea la tabla de interés
+create 'bc1:cli', {NAME =>'dp',VERSIONS =>2}, {NAME =>'dc',VERSIONS =>4}
+
+#para confirmar que existe se hace
+list_namespace_tables 'bc1:cli'
+
+# también lo puedo comprobar con el comando list, primero veo la ayuda
+hbase(main):027:0> help 'list'
+List all tables in hbase. Optional regular expression parameter could
+be used to filter the output. Examples:
+
+  hbase> list
+  hbase> list 'abc.*'
+  hbase> list 'ns:abc.*'
+  hbase> list 'ns:.*'
+
+# luego lo uso
+hbase(main):028:0> list 'bc1:.*'
+TABLE                                                                           
+bc1:cl                                                                          
+bc1:cli                                                                         
+2 row(s) in 0.0090 seconds
+
+=> ["bc1:cl", "bc1:cli"]
+
+# Describo la tabla
+hbase(main):034:0> desc 'bc1:cli'
+Table bc1:cli is ENABLED                                                        
+bc1:cli                                                                         
+COLUMN FAMILIES DESCRIPTION                                                     
+{NAME => 'dc', BLOOMFILTER => 'ROW', VERSIONS => '4', IN_MEMORY => 'false', KEEP
+_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMP
+RESSION => 'NONE', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '6553
+6', REPLICATION_SCOPE => '0'}                                                   
+{NAME => 'dp', BLOOMFILTER => 'ROW', VERSIONS => '2', IN_MEMORY => 'false', KEEP
+_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMP
+RESSION => 'NONE', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '6553
+6', REPLICATION_SCOPE => '0'}                                                   
+2 row(s) in 0.0120 seconds
+
+
+
+
+##  Cargar la tabla
+
+# 'r1' -> identificador o key, 'c1' -> cualificador, 'valor' -> el valor de la key
+# put 'bc1:cli', 'r1','c1',value'
+
+
+put 'bc1:cli', '001','dp:apellido2','Lopez'
+put 'bc1:cli', '002','dp:apellido2','Aznar'
+put 'bc1:cli', '003','dp:apellido2','Barcena'
+put 'bc1:cli', '004','dp:apellido2','Mayor'
+put 'bc1:cli', '005','dp:apellido2','Plaza'
+
+put 'bc1:cli', '001','dp:apellido1','Perez'
+put 'bc1:cli', '002','dp:apellido1','Garcia'
+put 'bc1:cli', '003','dp:apellido1','Sanchez'
+put 'bc1:cli', '004','dp:apellido1','Cabo'
+put 'bc1:cli', '005','dp:apellido1','Barrio'
+
+
+put 'bc1:cli', '001','dp:nombre','Juan'
+put 'bc1:cli', '002','dp:nombre','Pedro'
+put 'bc1:cli', '003','dp:nombre','Lucas'
+put 'bc1:cli', '004','dp:nombre','Maria'
+put 'bc1:cli', '005','dp:nombre','Lucia'
+
+put 'bc1:cli', '001','dc:telefono1','914457565'
+put 'bc1:cli', '002','dc:telefono1','931541232'
+put 'bc1:cli', '004','dc:telefono1','968579569'
+
+put 'bc1:cli', '003','dc:telefono2','6694589'
+put 'bc1:cli', '004','dc:telefono2','4558975'
+put 'bc1:cli', '005','dc:telefono2','8974589'
+
+
+put 'bc1:cli', '003','dc:mail','lsanchez@pmail.es'
+put 'bc1:cli', '004','dc:mail','mcabo@pd.com'
+
+
+## realizar el scan de la mismahbase(main):042:0> scan 'bc1:cli'
+ROW                      COLUMN+CELL                                                          
+ 001                     column=dc:telefono1, timestamp=1523131722003, value=914457565        
+ 001                     column=dp:apellido1, timestamp=1523131721888, value=Perez            
+ 001                     column=dp:apellido2, timestamp=1523131800768, value=Lopez            
+ 001                     column=dp:nombre, timestamp=1523131721945, value=Juan                
+ 002                     column=dc:telefono1, timestamp=1523131828223, value=913400021        
+ 002                     column=dp:apellido1, timestamp=1523131721897, value=Garcia           
+ 002                     column=dp:apellido2, timestamp=1523131721849, value=Aznar            
+ 002                     column=dp:nombre, timestamp=1523131721957, value=Pedro               
+ 003                     column=dc:mail, timestamp=1523131722089, value=lsanchez@pmail.es     
+ 003                     column=dc:telefono2, timestamp=1523131722032, value=6694589          
+ 003                     column=dp:apellido1, timestamp=1523131721906, value=Sanchez          
+ 003                     column=dp:apellido2, timestamp=1523131721858, value=Barcena          
+ 003                     column=dp:nombre, timestamp=1523131721966, value=Lucas               
+ 004                     column=dc:mail, timestamp=1523131723299, value=mcabo@pd.com          
+ 004                     column=dc:telefono1, timestamp=1523131722020, value=968579569        
+ 004                     column=dc:telefono2, timestamp=1523131722042, value=4558975          
+ 004                     column=dp:apellido1, timestamp=1523131721915, value=Cabo             
+ 004                     column=dp:apellido2, timestamp=1523131721867, value=Mayor            
+ 004                     column=dp:nombre, timestamp=1523131721974, value=Maria               
+ 005                     column=dc:telefono2, timestamp=1523131722064, value=8974589          
+ 005                     column=dp:apellido1, timestamp=1523131721925, value=Barrio           
+ 005                     column=dp:apellido2, timestamp=1523131721875, value=Plaza            
+ 005                     column=dp:nombre, timestamp=1523131721982, value=Lucia               
+5 row(s) in 0.0130 seconds
+
+
+
+# Modifico el telefono1 del cliente 002 con put... dos veces!
+hbase(main):043:0> put 'bc1:cli', '002','dc:telefono1','913400021'
+0 row(s) in 0.0510 seconds
+
+hbase(main):044:0> put 'bc1:cli', '002','dc:telefono1','913400111'
+0 row(s) in 0.0030 
+
+#compruebo que todo esté en orden con un get
+hbase(main):048:0> get 'bc1:cli', '002','dc:telefono1'
+COLUMN                   CELL                                                                 
+ dc:telefono1            timestamp=1523312209809, value=913400111                             
+1 row(s) in 0.0100 seconds
+
+#Para obtener las versiones de un punto
+hbase(main):050:0> get 'bc1:cli','002',{COLUMN => 'dc', VERSIONS=>5}
+COLUMN                   CELL                                                                 
+ dc:telefono1            timestamp=1523312209809, value=913400111                             
+ dc:telefono1            timestamp=1523312203667, value=913400021                             
+ dc:telefono1            timestamp=1523131828223, value=913400021                             
+ dc:telefono1            timestamp=1523131722011, value=931541232                             
+4 row(s) in 0.0040 seconds
+
+
+
+## ==================================================================
+## Gestión hdfs
+
+#obligo al sistema a descargar al hdfs
+hbase(main):046:0> flush 'bc1:cli'
+0 row(s) in 0.3900 seconds
+
+# No tengo ideo de como encontrar los archivos en el hdfs
+
+# Hago el snapshot de mi tabla
+hbase(main):055:0> snapshot 'bc1:cli', 'ssb'
+0 row(s) in 0.6930 seconds
+
+# los busco en la lista de snapshots
+hbase(main):058:0> list_snapshots
+SNAPSHOT                 TABLE + CREATION TIME                                                
+ alo_backup              alo:cliente (Thu Mar 15 19:55:41 +0100 2018)                         
+ aloclient               alo:cliente (Wed Apr 04 16:50:02 +0200 2018)                         
+ manriqueCliente         manrique:cliente (Thu Mar 15 19:57:42 +0100 2018)                    
+ porcliente01            por:cliente (Thu Mar 15 19:54:08 +0100 2018)                         
+ sn1                     bc:cli (Thu Mar 15 19:54:39 +0100 2018)                              
+ sn1_bc                  bc:cli (Thu Mar 15 19:55:14 +0100 2018)                              
+ snap_afernandez1        afernandez:cliente (Thu Mar 15 19:54:15 +0100 2018)                  
+ snap_gvillazan          gvillazan:cliente (Thu Mar 15 19:54:30 +0100 2018)                   
+ snapshotIalonso         ns_ia1:cliente (Thu Mar 15 19:56:19 +0100 2018)                      
+ snapshotjlg             jlg:cliente (Thu Mar 15 19:56:03 +0100 2018)                         
+ ssb                     bc1:cli (Tue Apr 10 00:58:33 +0200 2018)                             
+11 row(s) in 0.0360 seconds
+
+
+## Altero las tablas ................................................
+
+#Desabilito la tabla cleinte 'cli'
+hbase(main):065:0> disable 'bc1:cli'
+0 row(s) in 2.3520 seconds
+
+
+# Agrego dos familias a la tabla
+hbase(main):068:0> alter 'bc1:cli' , {NAME=>'f1', VERSION=>3, COMPRESSION=>'snappy'}, {NAME=>'f2', VERSION=>2, hbase(main):077:0> alter 'bc1:cli' , {NAME=>'f1', VERSION=>3, COMPRESSION=>'snappy'}, {NAME=>'f2', VERSION=>2, COMPRESSION=>'snappy'}
+Unknown argument ignored for column family f1: 1.8.7
+Updating all regions with the new schema...
+1/1 regions updated.
+Done.
+Unknown argument ignored for column family f2: 1.8.7
+Updating all regions with the new schema...
+1/1 regions updated.
+Done.
+0 row(s) in 4.3660 seconds
+
+# ... y comprubeo que existen
+hbase(main):078:0> desc 'bc1:cli'
+Table bc1:cli is DISABLED                                                                     
+bc1:cli                                                                                       
+COLUMN FAMILIES DESCRIPTION                                                                   
+{NAME => 'dc', BLOOMFILTER => 'ROW', VERSIONS => '4', IN_MEMORY => 'false', KEEP_DELETED_CELLS
+ => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', MIN_VERSI
+ONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}             
+{NAME => 'dp', BLOOMFILTER => 'ROW', VERSIONS => '2', IN_MEMORY => 'false', KEEP_DELETED_CELLS
+ => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', MIN_VERSI
+ONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}             
+{NAME => 'f1', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS
+ => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'SNAPPY', MIN_VER
+SIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}           
+{NAME => 'f2', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS
+ => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'SNAPPY', MIN_VER
+SIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}           
+4 row(s) in 0.0060 seconds
+
+# cambio el versionado de la columna 'dc'
+hbase(main):067:0> alter 'bc1:cli' , NAME=>'dc', VERSION=>3
+Unknown argument ignored for column family dc: 1.8.7
+Updating all regions with the new schema...
+1/1 regions updated.
+Done.
+0 row(s) in 2.1880 seconds
+
+#vuelvo a dejar disponible la tabla
+hbase(main):079:0> enable 'bc1:cli'
+0 row(s) in 2.2750 seconds
+
+#Borro las dos nuevas familias
+hbase(main):080:0> alter 'bc1:cli' , {NAME=>'f1', METHOD=>'delete'}, {NAME=>'f2', METHOD=>'delete'}
+Updating all regions with the new schema...
+0/1 regions updated.
+1/1 regions updated.
+Done.
+Updating all regions with the new schema...
+0/1 regions updated.
+1/1 regions updated.
+Done.
+0 row(s) in 6.8280 seconds
+
+
+## Función get ......................................................
+
+# Obtengo la información de la fila 004
+hbase(main):082:0> get 'bc1:cli','004'
+COLUMN                   CELL                                                                 
+ dc:mail                 timestamp=1523131723299, value=mcabo@pd.com                          
+ dc:telefono1            timestamp=1523131722020, value=968579569                             
+ dc:telefono2            timestamp=1523131722042, value=4558975                               
+ dp:apellido1            timestamp=1523131721915, value=Cabo                                  
+ dp:apellido2            timestamp=1523131721867, value=Mayor                                 
+ dp:nombre               timestamp=1523131721974, value=Maria                                 
+6 row(s) in 0.0070 seconds
+
+# Obtengo el telefono1 de la fila 003
+hbase(main):084:0> get 'bc1:cli','003',{COLUMN => 'dc:telefono1'}
+COLUMN                   CELL                                                                 
+0 row(s) in 0.0010 seconds
+
+# Apellido y teléfono de la fila 001
+hbase(main):001:0> get 'bc1:cli','001',{COLUMN => ['dp:apellido1','dc:telefono1']}
+COLUMN                   CELL                                                                 
+ dc:telefono1            timestamp=1523131722003, value=914457565                             
+ dp:apellido1            timestamp=1523131721888, value=Perez                                 
+2 row(s) in 0.2050 seconds
+
+# ultimas dos versiones del cliente 002
+hbase(main):005:0> get 'bc1:cli','002',{COLUMN => ['dp','dc'],VERSIONS=>2}
+COLUMN                      CELL                                                                         
+ dc:telefono1               timestamp=1523312209809, value=913400111                                     
+ dc:telefono1               timestamp=1523312203667, value=913400021                                     
+ dp:apellido1               timestamp=1523131721897, value=Garcia                                        
+ dp:apellido2               timestamp=1523131721849, value=Aznar                                         
+ dp:nombre                  timestamp=1523131721957, value=Pedro                                         
+5 row(s) in 0.0060 seconds
+
+
+## Función scan .....................................................
+
+hbase(main):007:0> scan 'bc1:cli'
+ROW                         COLUMN+CELL                                                                  
+ 001                        column=dc:telefono1, timestamp=1523131722003, value=914457565                
+ 001                        column=dp:apellido1, timestamp=1523131721888, value=Perez                    
+ 001                        column=dp:apellido2, timestamp=1523131800768, value=Lopez                    
+ 001                        column=dp:nombre, timestamp=1523131721945, value=Juan                        
+ 002                        column=dc:telefono1, timestamp=1523312209809, value=913400111                
+ 002                        column=dp:apellido1, timestamp=1523131721897, value=Garcia                   
+ 002                        column=dp:apellido2, timestamp=1523131721849, value=Aznar                    
+ 002                        column=dp:nombre, timestamp=1523131721957, value=Pedro                       
+ 003                        column=dc:mail, timestamp=1523131722089, value=lsanchez@pmail.es             
+ 003                        column=dc:telefono2, timestamp=1523131722032, value=6694589                  
+ 003                        column=dp:apellido1, timestamp=1523131721906, value=Sanchez                  
+ 003                        column=dp:apellido2, timestamp=1523131721858, value=Barcena                  
+ 003                        column=dp:nombre, timestamp=1523131721966, value=Lucas                       
+ 004                        column=dc:mail, timestamp=1523131723299, value=mcabo@pd.com                  
+ 004                        column=dc:telefono1, timestamp=1523131722020, value=968579569                
+ 004                        column=dc:telefono2, timestamp=1523131722042, value=4558975                  
+ 004                        column=dp:apellido1, timestamp=1523131721915, value=Cabo                     
+ 004                        column=dp:apellido2, timestamp=1523131721867, value=Mayor                    
+ 004                        column=dp:nombre, timestamp=1523131721974, value=Maria                       
+ 005                        column=dc:telefono2, timestamp=1523131722064, value=8974589                  
+ 005                        column=dp:apellido1, timestamp=1523131721925, value=Barrio                   
+ 005                        column=dp:apellido2, timestamp=1523131721875, value=Plaza                    
+ 005                        column=dp:nombre, timestamp=1523131721982, value=Lucia                       
+5 row(s) in 0.0570 seconds
+
+# Obtener apellido1 y mail de todos
+hbase(main):008:0> scan 'bc1:cli',{COLUMN=>['dp:apellido1', 'dc:mail']}
+ROW                         COLUMN+CELL                                                                  
+ 001                        column=dp:apellido1, timestamp=1523131721888, value=Perez                    
+ 002                        column=dp:apellido1, timestamp=1523131721897, value=Garcia                   
+ 003                        column=dc:mail, timestamp=1523131722089, value=lsanchez@pmail.es             
+ 003                        column=dp:apellido1, timestamp=1523131721906, value=Sanchez                  
+ 004                        column=dc:mail, timestamp=1523131723299, value=mcabo@pd.com                  
+ 004                        column=dp:apellido1, timestamp=1523131721915, value=Cabo                     
+ 005                        column=dp:apellido1, timestamp=1523131721925, value=Barrio                   
+5 row(s) in 0.0130 seconds
+
+#Obteniendo dos filas despueés de la 003
+hbase(main):016:0> scan 'bc1:cli', {COLUMNS => ['dp', 'dc'], LIMIT=>2, STARTROW => '003'}
+ROW                         COLUMN+CELL                                                                  
+ 003                        column=dc:mail, timestamp=1523131722089, value=lsanchez@pmail.es             
+ 003                        column=dc:telefono2, timestamp=1523131722032, value=6694589                  
+ 003                        column=dp:apellido1, timestamp=1523131721906, value=Sanchez                  
+ 003                        column=dp:apellido2, timestamp=1523131721858, value=Barcena                  
+ 003                        column=dp:nombre, timestamp=1523131721966, value=Lucas                       
+ 004                        column=dc:mail, timestamp=1523131723299, value=mcabo@pd.com                  
+ 004                        column=dc:telefono1, timestamp=1523131722020, value=968579569                
+ 004                        column=dc:telefono2, timestamp=1523131722042, value=4558975                  
+ 004                        column=dp:apellido1, timestamp=1523131721915, value=Cabo                     
+ 004                        column=dp:apellido2, timestamp=1523131721867, value=Mayor                    
+ 004                        column=dp:nombre, timestamp=1523131721974, value=Maria                       
+2 row(s) in 0.0070 seconds
+
+
+## Función delete ...................................................
+
+## borro la fila 004
+hbase(main):026:0> deleteall 'bc1:cli', '004'
+0 row(s) in 0.0050 seconds
+
+# borro el mail de 003
+hbase(main):029:0> delete 'bc1:cli', '003', 'dc:mail'
+0 row(s) in 0.0040 seconds
+
+# borrar la ultima version de telefono de 002... se debe especificar el TIMESTAMP. No me funcionó
+hbase(main):068:0> put 'bc1:cli', '002','dc:telefono1', 1523131722032
+
+
+## Función drop en tablas ..................................................
+
+# inhabilito la tabla
+hbase(main):072:0> disable 'bc1:cli'
+0 row(s) in 2.4090 seconds
+
+# la borro
+hbase(main):073:0> drop_all 'bc1:cli.*'
+bc1:cli                                                                                                  
+
+Drop the above 1 tables (y/n)?
+y
+1 tables successfully dropped
+
+# lsito las tablas y compruebo que no está, solo queda 'cl'
+hbase(main):074:0> list_namespace_tables 'bc1'
+TABLE                                                                                                    
+cl                                                                                                       
+1 row(s) in 0.0130 seconds
+
+
+## Función snapshot ...................................................
+
+# restore the snapshot
+hbase(main):078:0> restore_snapshot 'ssb'
+0 row(s) in 1.2690 seconds
+
+# comprueba que se ha recuperado la tabla cli
+hbase(main):079:0> list_namespace_tables 'bc1'
+TABLE                                                                                                    
+cl                                                                                                       
+cli                                                                                                      
+2 row(s) in 0.0070 seconds
+
+# borro el snapshot
+hbase(main):081:0> delete_snapshot 'ssb'
+0 row(s) in 0.0450 seconds
+
+# comrpuebo que ya no está en la lista
+hbase(main):082:0> list_snapshots
+SNAPSHOT                    TABLE + CREATION TIME                                                        
+ alo_backup                 alo:cliente (Thu Mar 15 19:55:41 +0100 2018)                                 
+ aloclient                  alo:cliente (Wed Apr 04 16:50:02 +0200 2018)                                 
+ manriqueCliente            manrique:cliente (Thu Mar 15 19:57:42 +0100 2018)                            
+ porcliente01               por:cliente (Thu Mar 15 19:54:08 +0100 2018)                                 
+ sn1                        bc:cli (Thu Mar 15 19:54:39 +0100 2018)                                      
+ sn1_bc                     bc:cli (Thu Mar 15 19:55:14 +0100 2018)                                      
+ snap_afernandez1           afernandez:cliente (Thu Mar 15 19:54:15 +0100 2018)                          
+ snap_gvillazan             gvillazan:cliente (Thu Mar 15 19:54:30 +0100 2018)                           
+ snapshotIalonso            ns_ia1:cliente (Thu Mar 15 19:56:19 +0100 2018)                              
+ snapshotjlg                jlg:cliente (Thu Mar 15 19:56:03 +0100 2018)                                 
+10 row(s) in 0.0230 seconds
+
+
+## Función drop_namespace ...................................................
+
+## Todas las tablas del namespace se deben desabilitar, luego borrar, y luego si se borra el namespace
+
+hbase(main):020:0> disable 'bc:cli'
+0 row(s) in 2.4170 seconds
+
+hbase(main):021:0> drop 'bc:cli'
+0 row(s) in 2.2760 seconds
+
+hbase(main):025:0> drop_namespace 'bc'
+0 row(s) in 0.0660 seconds
+
+
+
+
+
+
