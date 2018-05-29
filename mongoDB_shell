@@ -1,0 +1,200 @@
+
+##=============================================================================
+##                     P R A C T I C A   M O N G O - D B
+##=============================================================================
+
+
+####
+## Estudiante: Boris Cabrera Barandica
+###
+
+
+
+##       *  *  *
+
+# opening Mongo DB from docker and initializing it
+
+sudo docker start mongo
+sudo docker stop mongo
+sudo docker exec -ti mongo mongo
+
+show databases
+use db_name
+show collections
+
+
+
+#    *   *   *   *   E N U N C I A D O S     *   *   *   *
+
+
+Entregar consulta para el Shell de mongo y código
+java para resolver las siguientes preguntas:
+
+a) Obtener un listado compuesto por Provincia,
+Municipio y Demandantes de empleo mujer de edad
+mayor o igual a 45 de enero de 2007 con las
+siguientes consideraciones:
+
+    1) Si es de Barcelona se mostrarán aquellas que el número de
+    demandantes sea igual o superior a 1000
+
+    2) Si es de Bizkaia el número de demandantes debe estar entre 10
+    y 7 ambos incluidos.
+
+db.Solicitudes.find(
+{
+    '$or' :[
+        {
+        '$and' : [
+            {
+                'Código_mes': 200701
+            },
+            {
+                'Provincia': 'Barcelona'
+            },
+            {
+                'Dtes_Empleo_mujer_edad_>=45': {'$gte' : 1000}
+            }
+            ]
+        },
+         {
+        '$and' : [
+            {
+                'Código_mes': 200701
+            },
+            {
+                'Provincia': 'Bizkaia'
+            },
+            {
+                'Dtes_Empleo_mujer_edad_>=45': {'$gte' : 7,'$lte' : 10}
+            }
+            ]
+        }
+
+            ]
+        },
+        {
+            'Provincia' : 1, 'Municipio' : 1, 'Dtes_Empleo_mujer_edad_>=45' : 1, '_id' : 0
+}
+).limit(9).pretty()
+
+##   *   *   *   *   *   R E S U L T S   *   *   *   *   * 
+
+{
+    "Provincia" : "Barcelona",
+    "Municipio" : "Badalona",
+    "Dtes_Empleo_mujer_edad_>=45" : 2919
+}
+{
+    "Provincia" : "Barcelona",
+    "Municipio" : "Barcelona",
+    "Dtes_Empleo_mujer_edad_>=45" : 17519
+}
+{
+    "Provincia" : "Barcelona",
+    "Municipio" : "Hospitalet de Llobregat, L'",
+    "Dtes_Empleo_mujer_edad_>=45" : 2938
+}
+{
+    "Provincia" : "Barcelona",
+    "Municipio" : "Mataró",
+    "Dtes_Empleo_mujer_edad_>=45" : 2158
+}
+{
+    "Provincia" : "Barcelona",
+    "Municipio" : "Sabadell",
+    "Dtes_Empleo_mujer_edad_>=45" : 3251
+}
+{
+    "Provincia" : "Barcelona",
+    "Municipio" : "Santa Coloma de Gramenet",
+    "Dtes_Empleo_mujer_edad_>=45" : 1321
+}
+{
+    "Provincia" : "Barcelona",
+    "Municipio" : "Terrassa",
+    "Dtes_Empleo_mujer_edad_>=45" : 3126
+}
+{
+    "Provincia" : "Bizkaia",
+    "Municipio" : "Artzentales",
+    "Dtes_Empleo_mujer_edad_>=45" : 9
+}
+{
+    "Provincia" : "Bizkaia",
+    "Municipio" : "Arrankudiaga",
+    "Dtes_Empleo_mujer_edad_>=45" : 7
+}
+
+
+
+
+b) Obtener una lista ordenada de mayor a menor de
+Provincias según el número total de demandantes de
+empleo según la información contenida en la base de
+datos. Mostrar solo aquellas con numero total de
+demandantes mayor de 1700000
+
+db.Solicitudes.aggregate([
+    {
+        '$group' : {
+            _id : '$Provincia',
+            'TotalDemandantesProvincia' : {$sum: "$total_Dtes_Empleo"} 
+        }
+    },
+    {
+    $match: {'TotalDemandantesProvincia' : { $gt : 1700000}}
+    },
+    {
+        '$sort' : {'TotalDemandantesProvincia': -1}
+    }
+])
+
+##   *   *   *   *   *   R E S U L T S   *   *   *   *   * 
+
+{ "_id" : "Madrid", "TotalDemandantesProvincia" : 3689710 }
+{ "_id" : "Barcelona", "TotalDemandantesProvincia" : 3177470 }
+{ "_id" : "Sevilla", "TotalDemandantesProvincia" : 2610435 }
+{ "_id" : "Cádiz", "TotalDemandantesProvincia" : 1772758 }
+{ "_id" : "Valencia/Valéncia", "TotalDemandantesProvincia" : 1731241 }
+
+
+
+
+c) Mostrar sólo el nombre del municipio de Huelva con
+mayor porcentaje de solicitudes del sector servicios
+del mes de marzo del 2007
+
+db.Solicitudes.aggregate(
+        [
+        {
+            '$match' : {'Provincia' : 'Huelva'}
+        },
+        {
+            '$match' : {'Código_mes': 200703}
+        },
+        {
+            '$match' : {"total_Dtes_Empleo" : {'$gte' : 1}}
+        },
+        {
+            $project : { "_id" : 0 , Municipio : 1, PorcenServicios : { $divide: ["$Dtes_Empleo_Servicios", "$total_Dtes_Empleo"]}} 
+        },
+        {
+            '$sort' : {'PorcenServicios': -1}
+        },
+        {
+            '$limit' : 1
+        }
+        ]
+        ).pretty()
+
+##   *   *   *   *   *   R E S U L T S   *   *   *   *   * 
+
+{ "Municipio" : "Nava, La", "PorcenServicios" : 0.6785714285714286 }
+
+
+
+
+
+
+
